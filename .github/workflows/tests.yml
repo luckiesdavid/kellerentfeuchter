@@ -1,0 +1,38 @@
+name: Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  regelung:
+    name: Regelung (Unit-Tests + 1-Jahres-Simulation)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: tests/run_tests.sh
+
+  kompilieren:
+    name: Sketch kompilieren (ESP32-Core ${{ matrix.core }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        core: ["2.0.17", "3.3.0"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: arduino/compile-sketches@v1
+        with:
+          fqbn: esp32:esp32:esp32
+          platforms: |
+            - name: esp32:esp32
+              source-url: https://espressif.github.io/arduino-esp32/package_esp32_index.json
+              version: ${{ matrix.core }}
+          sketch-paths: |
+            - esp32_taupunkt_lokal_v5
+          libraries: |
+            - name: Adafruit BME280 Library
+            - name: Adafruit Unified Sensor
+            - name: Adafruit SSD1306
+            - name: Adafruit GFX Library
+          enable-deltas-report: false
